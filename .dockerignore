@@ -1,6 +1,7 @@
 .git
-node_modules
-vendor
 storage/*.key
 .env
 docker-compose.yml
+/node_modules
+/vendor
+*.log
