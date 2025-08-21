@@ -36,4 +36,5 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Start via Supervisor (manages nginx + php-fpm)
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+
