@@ -3,14 +3,17 @@ FROM php:8.2-fpm-alpine
 
 # System deps
 RUN apk add --no-cache \
-    nginx supervisor curl git unzip \
-    libpng-dev libjpeg-turbo-dev libzip-dev oniguruma-dev
+    nginx supervisor curl git unzip bash \
+    libpng-dev libjpeg-turbo-dev libzip-dev oniguruma-dev python3 py3-pip
+
+# Fix Supervisor Python warning (pin setuptools <81)
+RUN pip install --no-cache-dir --upgrade "setuptools<81"
 
 # PHP extensions
 RUN docker-php-ext-configure gd --with-jpeg \
  && docker-php-ext-install pdo pdo_mysql mbstring gd zip opcache
 
-# Composer
+# Composer (copy from official image)
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
@@ -28,9 +31,9 @@ COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Railway usually exposes 8080
+# Railway exposes 8080
 ENV PORT=8080
 EXPOSE 8080
 
-# ✅ Run nginx + php-fpm via supervisord
+# Start via Supervisor (manages nginx + php-fpm)
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
