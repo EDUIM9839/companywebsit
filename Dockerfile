@@ -10,7 +10,7 @@ RUN apk add --no-cache \
 RUN docker-php-ext-configure gd --with-jpeg \
  && docker-php-ext-install pdo pdo_mysql mbstring gd zip opcache
 
-# Composer (copy from official image)
+# Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
@@ -22,9 +22,6 @@ COPY . /var/www/html
 RUN composer install --no-dev --optimize-autoloader \
  && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# (Optional) Agar Vite build repo me already hai to ensure public/build present
-# Agar yahin build karna hai to Node multi-stage use karke copy karo (niche note me diya hai)
-
 # Nginx & Supervisor configs
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
@@ -35,4 +32,5 @@ RUN chmod +x /entrypoint.sh
 ENV PORT=8080
 EXPOSE 8080
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+# ✅ Run nginx + php-fpm via supervisord
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
